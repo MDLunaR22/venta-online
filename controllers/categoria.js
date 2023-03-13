@@ -79,19 +79,16 @@ const eliminarCategoria = async (req = request, res = response) => {
 
     const categoriaDB = await Categoria.findOne({ _id: id });
     const productoEnDB = await Producto.find({ categoria: categoriaDB.categoria, estado: true })
+
     if (productoEnDB) {
-        const productoActualizar = await Producto.findOneAndUpdate({ _id: id }, { categoria: 'Variado' });
-        return res.status(400).json({
-            msg: `La categoria ${categoriaDB.nombre} se modificara a la categoria: variado`
+        const productoActualizar = await Producto.findOneAndUpdate(id, { categoria: 'Variado' });
+        const categoriaBorrada = await Categoria.findByIdAndDelete(id);
+
+        return res.json({
+            msg: `La categoria ${categoriaDB.nombre} se modificara a la categoria: variado`,
+            categoriaBorrada: categoriaBorrada
         });
     }
-
-    const categoriaBorrada = await Categoria.findByIdAndDelete(id);
-
-    res.json({
-        msg: 'delete categoria',
-        categoriaBorrada
-    });
 
 }
 
