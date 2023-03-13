@@ -1,7 +1,7 @@
 const { Router } = require('express');
 const { check } = require('express-validator');
 
-const { existeCategoriaPorId } = require('../helpers/db-validators');
+const { existeCategoriaPorId, existeCategoria } = require('../helpers/db-validators');
 
 const { validarCampos } = require('../middlewares/validar-campos');
 const { validarJWT } = require('../middlewares/validar-jwt');
@@ -23,15 +23,17 @@ router.get('/:id', [
 
 router.post('/agregar', [
     validarJWT,
-    check('nombre', 'El nombre de la categoria es obligatorio').not().isEmpty(),
+    esAdminRole,
+    check('nombre', 'El nombre de la categoria es obligatoria').not().isEmpty(),
+    check('nombre').custom( existeCategoria ),
     validarCampos
 ], crearCategoria);
 
 router.put('/editar/:id', [
     validarJWT,
+    esAdminRole,
     check('id', 'No es un id de mongo valido').isMongoId(),
     check('id').custom( existeCategoriaPorId ),
-    check('nombre', 'El nombre de la categoria es obligatorio').not().isEmpty(),
     validarCampos
 ], actualizarCategoria);
 

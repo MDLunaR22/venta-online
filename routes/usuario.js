@@ -17,16 +17,16 @@ router.post('/agregar', [
     check('password', 'La password es obligatorio para el post').not().isEmpty(),
     check('password', 'La passwarod debe ser mayor a 6 letras').isLength({ min: 6 }),
     check('correo', 'El correo no es valido').isEmail(),
-    check('correo').custom( emailExiste ),
-    check('rol', 'El rol es obligatorio para el post').not().isEmpty(),
-    check('rol').custom( esRoleValido ),
+    check('correo').custom(emailExiste),
     validarCampos
-] , postUsuario);
+], postUsuario);
 
 
-router.put('/editar/:id', putUsuario);
+router.put('/editar/:id', [
+    validarJWT
+], putUsuario);
 
-router.delete('/eliminar/:id' ,deleteUsuario);
+router.delete('/eliminar/:id', deleteUsuario);
 
 
 module.exports = router;

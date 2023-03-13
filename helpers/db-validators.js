@@ -59,6 +59,15 @@ const existeCategoriaPorId = async( id ) => {
 
 }
 
+const existeCategoria = async( nombre ) => {
+    
+    const existeCategoria = Categoria.findOne({ nombre: nombre });
+    if ( !existeCategoria ) {
+        throw new Error(`La categoria: ${existeCategoria} no existe en la DB`);
+    }
+
+}
+
 
 const existeProductoPorId = async( id ) => {
     
@@ -77,5 +86,6 @@ module.exports = {
     existeCategoriaPorId,
     existeProductoPorId,
 
-    validarRol
+    validarRol,
+    existeCategoria
 }

@@ -1,26 +1,28 @@
 const { response, request } = require('express');
 const Categoria = require('../models/categoria');
+const Producto = require('../models/producto')
+const Usuario = require('../models/usuario')
+const obtenerCategorias = async (req = request, res = response) => {
 
-const obtenerCategorias = async(req = request, res = response) => {
-    
-     const query = { estado: true };
+    const query = { estado: true };
 
-     const listaCategorias = await Promise.all([
-         Categoria.countDocuments(query)
-     ]);
- 
-     res.json({
-         msg: 'GET API de usuarios',
+    const listaCategorias = await Promise.all([
+        Categoria.countDocuments(query),
+        Categoria.find(query)
+    ]);
+
+    res.json({
+        msg: 'Categorias',
         listaCategorias
-     });
+    });
 
 
 }
 
-const obtenerCategoriaPorId = async(req = request, res = response) => {
+const obtenerCategoriaPorId = async (req = request, res = response) => {
 
     const { id } = req.params;
-    const categoria = await Categoria.findById( id )
+    const categoria = await Categoria.findById(id)
 
     res.json({
         msg: 'categoria por id',
@@ -31,49 +33,37 @@ const obtenerCategoriaPorId = async(req = request, res = response) => {
 
 
 const crearCategoria = async (req = request, res = response) => {
+    const { nombre } = req.body;
 
-    const nombre  = req.body.nombre;
-    
-    const categoriaDB = await Categoria.findOne({ nombre });
-    if (categoriaDB) {
+    const existeCategoria = await Categoria.findOne({ nombre: nombre })
+    if (existeCategoria) {
         return res.status(400).json({
-            msg: `La categoria ${categoriaDB.nombre}, ya existe en la DB`
-        });
+            msg: `La categoria ${nombre} ya existe en la db`
+        })
     }
-    
+
     const data = {
-        nombre,
+        nombre: nombre,
         usuario: req.usuario._id
     }
 
-    const categoria = new Categoria(data);
-    
-    await categoria.save();
+    const categoriaNueva = new Categoria(data);
+
+    await categoriaNueva.save();
 
     res.status(201).json({
-        msg: 'Post de categoria',
-        categoria
+        msg: 'Nueva categoria',
+        categoriaNueva
     });
 
 }
 
 
-const actualizarCategoria = async(req = request, res = response) => {
+const actualizarCategoria = async (req = request, res = response) => {
 
     const { id } = req.params;
-    const { _id, estado, usuario, ...data } = req.body;
 
-    const categoriaDB = await Categoria.findOne({ nombre: data.nombre });
-    if (categoriaDB) {
-        return res.status(400).json({
-            msg: `La categoria ${categoriaDB.nombre}, ya existe en la DB`
-        });
-    }
-    
-    data.nombre = data.nombre;
-    data.usuario = req.usuario._id;
-
-    const categoria = await Categoria.findByIdAndUpdate( id, data, { new: true } );
+    const categoria = await Categoria.findByIdAndUpdate(id, req.body, { new: true });
 
     res.json({
         msg: 'Put de categoria',
@@ -83,10 +73,20 @@ const actualizarCategoria = async(req = request, res = response) => {
 }
 
 
-const eliminarCategoria = async(req = request, res = response) => {
+const eliminarCategoria = async (req = request, res = response) => {
 
     const { id } = req.params;
-    const categoriaBorrada = await Categoria.findByIdAndUpdate(id, { estado: false }, { new: true });
+
+    const categoriaDB = await Categoria.findOne({ _id: id });
+    const productoEnDB = await Producto.find({ categoria: categoriaDB.categoria, estado: true })
+    if (productoEnDB) {
+        const productoActualizar = await Producto.findOneAndUpdate({ _id: id }, { categoria: 'Variado' });
+        return res.status(400).json({
+            msg: `La categoria ${categoriaDB.nombre} se modificara a la categoria: variado`
+        });
+    }
+
+    const categoriaBorrada = await Categoria.findByIdAndDelete(id);
 
     res.json({
         msg: 'delete categoria',

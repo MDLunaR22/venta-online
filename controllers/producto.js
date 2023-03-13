@@ -59,32 +59,35 @@ const obtenerProductosVendidos = async (req = request, res = response) => {
 
 const crearProducto = async (req = request, res = response) => {
 
-    const { estado, usuario, ...body } = req.body;
-    const productoEnDB = await Producto.findOne({ nombre: body.nombre });
+    const { nombre, categoria, ...body } = req.body;
 
-    const categoriaDB = await Categoria.findOne({ nombre: body.categoria });
-    if (categoriaDB) {
-        return res.status(400).json({
-            msg: `La categoria ${categoriaDB.nombre}, ya existe en la DB`
-        });
-    }
+    const productoEnDB = await Producto.findOne({ nombre: nombre });
+    const existeCategoria = await Categoria.findOne({ nombre: categoria });
+
     if (productoEnDB) {
         return res.status(400).json({
-            mensajeError: `El producto ${productoEnDB.nombre} ya existe en la DB`
+            msg: `El producto ${productoEnDB.nombre} ya existe en la DB`
+        });
+    }
+
+    if (!existeCategoria) {
+        return res.status(400).json({
+            msg: `La categoria ${categoria} no existe en la DB`
         });
     }
     const data = {
         ...body,
-        nombre: body.nombre,
+        nombre: nombre,
+        categoria: categoria,
         usuario: req.usuario._id
     }
 
-    const producto = new Producto(data);
-    await producto.save();
+    const productoNuevo = new Producto(data);
+    await productoNuevo.save();
 
     res.status(201).json({
         msg: 'Post Producto',
-        producto
+        productoNuevo
     });
 
 
@@ -94,27 +97,26 @@ const crearProducto = async (req = request, res = response) => {
 const actualizarProducto = async (req = request, res = response) => {
 
     const { id } = req.params;
-    const { _id, estado, usuario, ...data } = req.body;
+    const { nombre, categoria, ...body } = req.body;
 
-    const productoEnDB = await Producto.findById({ _id: id });
-    const categoriaDB = await Categoria.findOne({ nombre: body.categoria });
+    const categoriaDB = await Categoria.findOne({ nombre: categoria });
 
-    if (categoriaDB) {
+    if (!categoriaDB) {
         return res.status(400).json({
-            msg: `La categoria ${categoriaDB.nombre}, ya existe en la DB`
-        });
-    }
-    if (productoEnDB) {
-        return res.status(400).json({
-            mensajeError: `El producto ${productoEnDB.nombre} ya existe en la DB`
+            msg: `La categoria ${categoria} no existe en la db`
         });
     }
 
-    data.usuario = req.usuario._id;
+    const data = {
+        ...body,
+        nombre: nombre,
+        categoria: categoria
+    }
+
     const producto = await Producto.findByIdAndUpdate(id, data, { new: true });
 
     res.json({
-        msg: 'Put de producto',
+        msg: 'Actualizar producto',
         producto
     });
 
@@ -124,16 +126,7 @@ const actualizarProducto = async (req = request, res = response) => {
 const eliminarProducto = async (req = request, res = response) => {
 
     const { id } = req.params;
-
-    const productoEnDB = await Producto.findOne({ nombre: body.nombre });
-
-    const categoriaDB = await Categoria.findOne({ nombre: body.categoria });
-    if (categoriaDB) {
-        return res.status(400).json({
-            msg: `La categoria ${categoriaDB.nombre}, ya existe en la DB`
-        });
-    }
-    const productoBorrado = await Producto.findByIdAndUpdate(id, { estado: false }, { new: true });
+    const productoBorrado = await Producto.findByIdAndDelete(id);
 
 
     res.json({

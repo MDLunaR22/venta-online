@@ -11,10 +11,9 @@ const CategoriaSchema = Schema({
         default: true,
         required: true
     },
-    usuario: {
+    productos: {
         type: Schema.Types.ObjectId,
-        ref: 'Usuario',
-        required: true
+        ref: 'Productos'
     }
 });
 

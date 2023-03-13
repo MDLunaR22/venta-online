@@ -10,9 +10,9 @@ class Server {
 
         this.paths = {
             auth: '/api/auth',
-            usuario: '/api/usuarios',
-            categoria: '/api/categorias',
-            producto: '/api/productos'
+            usuario: '/api/usuario',
+            categoria: '/api/categoria',
+            producto: '/api/producto'
         }
 
         this.conectarDB();
