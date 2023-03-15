@@ -78,6 +78,16 @@ const existeProductoPorId = async( id ) => {
 
 }
 
+const existeFacturaPorId = async( id ) => {
+
+    //Verificar si existe el ID
+    const existIdOfFacture = await Factura.findById( id );
+    if ( !existIdOfFacture ) {
+        throw new Error(`El id: ${id} no existe en la DB`);
+    }
+
+}
+
 
 module.exports = {
     emailExiste,
@@ -87,5 +97,6 @@ module.exports = {
     existeProductoPorId,
 
     validarRol,
-    existeCategoria
+    existeCategoria,
+    existeFacturaPorId
 }

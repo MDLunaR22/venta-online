@@ -11,7 +11,7 @@ const obtenerProductos = async (req = request, res = response) => {
     ]);
 
     res.json({
-        msg: 'Get productos',
+        msg: 'Productos',
         listaProductos
     });
 }
@@ -22,10 +22,26 @@ const obtenerProductoPorId = async (req = request, res = response) => {
     const producto = await Producto.findById(id)
 
     res.json({
-        msg: 'producto por id',
+        msg: 'Producto por id',
         producto
     });
 
+}
+
+const obtenerProductosNombre = async(req = request, res = response) => {
+    const { producto } = req.params;
+    const productoDB = await Producto.findOne({nombre: producto})
+
+    if(productoDB == null){
+        return res.status(400).json({
+            msg:'El producto no existe o no se coloco el nombre del producto correctamente'
+        })
+    }
+
+    res.json({
+        msg: 'Producto por nombre',
+        productoDB
+    });
 }
 
 const obtenerProductosAgotados = async (req = request, res = response) => {
@@ -37,21 +53,18 @@ const obtenerProductosAgotados = async (req = request, res = response) => {
     ]);
 
     res.json({
-        msg: 'api productos',
+        msg: 'Productos agotados',
         listaProductos
     });
 }
 
 const obtenerProductosVendidos = async (req = request, res = response) => {
-    let ventas = () => {
 
-    };
     const listaProductos = await Promise.all([
-        Producto.countDocuments(ventas),
-        Producto.find(ventas)
+        Producto.find({ ventas: { $gt: 1 } })
     ]);
-    res.json({
-        msg: 'Get productos',
+    return res.json({
+        msg: 'Productos mas vendidos',
         listaProductos
     });
 }
@@ -86,7 +99,7 @@ const crearProducto = async (req = request, res = response) => {
     await productoNuevo.save();
 
     res.status(201).json({
-        msg: 'Post Producto',
+        msg: 'Agregar Producto',
         productoNuevo
     });
 
@@ -97,23 +110,19 @@ const crearProducto = async (req = request, res = response) => {
 const actualizarProducto = async (req = request, res = response) => {
 
     const { id } = req.params;
-    const { nombre, categoria, ...body } = req.body;
+    const actualizar = req.body;
 
-    const categoriaDB = await Categoria.findOne({ nombre: categoria });
+    const categoriaDB = await Categoria.findOne({ nombre: actualizar.categoria });
 
-    if (!categoriaDB) {
-        return res.status(400).json({
-            msg: `La categoria ${categoria} no existe en la db`
-        });
+    if (categoriaDB != null) {
+        if (categoriaDB) {
+            return res.status(400).json({
+                msg: `La categoria ${categoriaDB.nombre} no existe en la db`
+            });
+        }
     }
 
-    const data = {
-        ...body,
-        nombre: nombre,
-        categoria: categoria
-    }
-
-    const producto = await Producto.findByIdAndUpdate(id, data, { new: true });
+    const producto = await Producto.findByIdAndUpdate(id, actualizar);
 
     res.json({
         msg: 'Actualizar producto',
@@ -130,7 +139,7 @@ const eliminarProducto = async (req = request, res = response) => {
 
 
     res.json({
-        msg: 'delete producto',
+        msg: 'Eliminar producto',
         productoBorrado
     });
 
@@ -146,5 +155,6 @@ module.exports = {
     eliminarProducto,
 
     obtenerProductosAgotados,
-    obtenerProductosVendidos
+    obtenerProductosVendidos,
+    obtenerProductosNombre
 }

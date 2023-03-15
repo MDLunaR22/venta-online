@@ -1,7 +1,7 @@
 const { response, request } = require('express');
 const Categoria = require('../models/categoria');
 const Producto = require('../models/producto')
-const Usuario = require('../models/usuario')
+
 const obtenerCategorias = async (req = request, res = response) => {
 
     const query = { estado: true };
@@ -28,6 +28,23 @@ const obtenerCategoriaPorId = async (req = request, res = response) => {
         msg: 'categoria por id',
         categoria
     });
+
+}
+
+const obtenerCategoriaNombre = async (req = request, res = response) =>{
+    // const {categoria} = req.body;
+    const categoria = req.params.categoria;
+    const categoriaDB = await Categoria.findOne({nombre: categoria})
+    if(categoriaDB == null){
+        return res.json({
+            msg:'La categoria no existe o no se ha colocado el nombre correctamente'
+        })
+    }
+
+    res.json({
+        msg: 'Categoria por nombre',
+        categoria: categoriaDB
+    })
 
 }
 
@@ -76,20 +93,18 @@ const actualizarCategoria = async (req = request, res = response) => {
 const eliminarCategoria = async (req = request, res = response) => {
 
     const { id } = req.params;
+    const categoriaDB = await Categoria.findById( {_id : id} );
+    const listaProductos = await Promise.all([
+        Producto.countDocuments({categoria: categoriaDB.nombre}),
+        producto.find({categoria: categoriaDB.nombre}),
+        Producto.updateMany({categoria: categoriaDB.nombre}, {categoria: 'Variado'})
+    ])
 
-    const categoriaDB = await Categoria.findOne({ _id: id });
-    const productoEnDB = await Producto.find({ categoria: categoriaDB.categoria, estado: true })
-
-    if (productoEnDB) {
-        const productoActualizar = await Producto.findOneAndUpdate(id, { categoria: 'Variado' });
-        const categoriaBorrada = await Categoria.findByIdAndDelete(id);
-
-        return res.json({
-            msg: `La categoria ${categoriaDB.nombre} se modificara a la categoria: variado`,
-            categoriaBorrada: categoriaBorrada
-        });
-    }
-
+    const categoriaBorrada = await Categoria.findByIdAndDelete(id);
+    return res.json({
+        msg: `La categoria ${categoriaDB.nombre} se modificara a la categoria: Variado`,
+        listaProductos
+    });
 }
 
 
@@ -99,5 +114,7 @@ module.exports = {
     obtenerCategoriaPorId,
     crearCategoria,
     actualizarCategoria,
-    eliminarCategoria
+    eliminarCategoria,
+
+    obtenerCategoriaNombre
 }

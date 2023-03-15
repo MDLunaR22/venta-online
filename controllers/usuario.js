@@ -4,11 +4,8 @@ const Usuario = require('../models/usuario');
 const { generarJWT } = require('../helpers/generar-jwt');
 
 
-const Role = require('../models/role')
-
-
 const getUsuarios = async (req = request, res = response) => {
-    
+
     const query = { estado: true };
 
     const listaUsuarios = await Promise.all([
@@ -24,16 +21,16 @@ const getUsuarios = async (req = request, res = response) => {
 }
 
 const postUsuario = async (req = request, res = response) => {
-    
-    const { nombre, correo, password, rol } = req.body;
-    const usuarioDB = new Usuario({ nombre, correo, password, rol });
-    
+
+    const { nombre, correo, password } = req.body;
+    const usuarioDB = new Usuario({ nombre, correo, password, rol: 'ADMIN_ROLE' });
+
     const salt = bcryptjs.genSaltSync();
     usuarioDB.password = bcryptjs.hashSync(password, salt);
-    
+
     await usuarioDB.save();
 
-    const token = await generarJWT( usuarioDB.id );
+    const token = await generarJWT(usuarioDB.id);
 
     res.status(201).json({
         msg: 'POST API de usuario',
@@ -49,23 +46,23 @@ const putUsuario = async (req = request, res = response) => {
     const usuario1 = req.header('x-token');
     const { _id, rol, estado, ...resto } = req.body;
 
-    const rolUsuario = await Usuario.findById({_id: usuario1.uid})
-    const usuario = await Usuario.findOne({_id: id})
+    const rolUsuario = await Usuario.findById({ _id: usuario1.uid })
+    const usuario = await Usuario.findOne({ _id: id })
 
-    if(rolUsuario.rol != 'ADMIN_ROLE'){
+    if (rolUsuario.rol != 'ADMIN_ROLE') {
         return res.status(501).json({
             msg: 'Un cliente no puede hacer esto'
         })
     }
-    if(usuario.rol == 'ADMIN_ROLE'){
+    if (usuario.rol == 'ADMIN_ROLE') {
         return res.status(400).json({
-            msg:'No se puede editar un admin'
+            msg: 'No se puede editar un admin'
         })
     }
-    
+
     const salt = bcryptjs.genSaltSync();
     resto.password = bcryptjs.hashSync(resto.password, salt);
-    
+
     const usuarioEditado = await Usuario.findByIdAndUpdate(id, resto);
 
     res.json({
@@ -79,13 +76,28 @@ const putUsuario = async (req = request, res = response) => {
 const deleteUsuario = async (req = request, res = response) => {
 
     const { id } = req.params;
-    
+
+    const usuarioToken = req.usuario;
+    const usuario1DB = await Usuario.findById(id)
+
+
+    if (usuarioToken.rol == 'ADMIN_ROLE' && usuario1DB.rol == 'ADMIN_ROLE') {
+        return res.status(400).json({
+            msg: 'No se puede eliminar un admin'
+        })
+    }
+    if (usuarioToken.rol != 'ADMIN_ROLE' && usuarioToken._id != id) {
+        return res.status(501).json({
+            msg: 'Un cliente no puede eliminar a esto'
+        })
+    }
+
     const usuarioEliminado = await Usuario.findByIdAndDelete(id);
-    
+
 
     res.json({
-        msg: 'DELETE API de usuario',
-        usuarioEliminado
+        msg: 'Eliminar Usuario',
+        usuarioEliminado,
     });
 
 }

@@ -6,7 +6,6 @@ const { getUsuarios, postUsuario, putUsuario, deleteUsuario } = require('../cont
 const { emailExiste, esRoleValido, existeUsuarioPorId, validarRol } = require('../helpers/db-validators');
 const { validarCampos } = require('../middlewares/validar-campos');
 const { validarJWT } = require('../middlewares/validar-jwt');
-const { esAdminRole } = require('../middlewares/validar-roles');
 
 const router = Router();
 
@@ -26,7 +25,7 @@ router.put('/editar/:id', [
     validarJWT
 ], putUsuario);
 
-router.delete('/eliminar/:id', deleteUsuario);
+router.delete('/eliminar/:id', validarJWT, deleteUsuario);
 
 
 module.exports = router;

@@ -14,7 +14,8 @@ const { obtenerProductos,
     actualizarProducto,
     eliminarProducto,
     obtenerProductosAgotados,
-    obtenerProductosVendidos } = require('../controllers/producto');
+    obtenerProductosVendidos,
+    obtenerProductosNombre } = require('../controllers/producto');
 
 const router = Router();
 
@@ -24,6 +25,8 @@ router.get('/mostrar', obtenerProductos);
 router.get('/agotados', obtenerProductosAgotados);
 
 router.get('/ventas', obtenerProductosVendidos)
+
+router.get('/buscar/:producto', obtenerProductosNombre)
 
 router.get('/:id', [
     check('id', 'No es un id de mongo valido').isMongoId(),
