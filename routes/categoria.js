@@ -44,6 +44,7 @@ router.put('/editar/:id', [
     esAdminRole,
     check('id', 'No es un id de mongo valido').isMongoId(),
     check('id').custom(existeCategoriaPorId),
+    check(''),
     validarCampos
 ], actualizarCategoria);
 
@@ -51,7 +52,6 @@ router.delete('/eliminar/:id', [
     validarJWT,
     esAdminRole,
     check('id', 'No es un id de mongo valido').isMongoId(),
-    check('id').custom(existeCategoriaPorId),
     validarCampos
 ], eliminarCategoria);
 

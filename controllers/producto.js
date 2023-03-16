@@ -28,13 +28,13 @@ const obtenerProductoPorId = async (req = request, res = response) => {
 
 }
 
-const obtenerProductosNombre = async(req = request, res = response) => {
+const obtenerProductosNombre = async (req = request, res = response) => {
     const { producto } = req.params;
-    const productoDB = await Producto.findOne({nombre: producto})
+    const productoDB = await Producto.findOne({ nombre: producto })
 
-    if(productoDB == null){
+    if (productoDB == null) {
         return res.status(400).json({
-            msg:'El producto no existe o no se coloco el nombre del producto correctamente'
+            msg: 'El producto no existe o no se coloco el nombre del producto correctamente'
         })
     }
 
@@ -114,12 +114,10 @@ const actualizarProducto = async (req = request, res = response) => {
 
     const categoriaDB = await Categoria.findOne({ nombre: actualizar.categoria });
 
-    if (categoriaDB != null) {
-        if (categoriaDB) {
-            return res.status(400).json({
-                msg: `La categoria ${categoriaDB.nombre} no existe en la db`
-            });
-        }
+    if (!categoriaDB) {
+        return res.status(400).json({
+            msg: `La categoria ${actualizar.categoria} no existe en la db`
+        });
     }
 
     const producto = await Producto.findByIdAndUpdate(id, actualizar);

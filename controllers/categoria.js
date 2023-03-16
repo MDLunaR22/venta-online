@@ -96,13 +96,14 @@ const eliminarCategoria = async (req = request, res = response) => {
     const categoriaDB = await Categoria.findById( {_id : id} );
     const listaProductos = await Promise.all([
         Producto.countDocuments({categoria: categoriaDB.nombre}),
-        producto.find({categoria: categoriaDB.nombre}),
+        Producto.find({categoria: categoriaDB.nombre}),
         Producto.updateMany({categoria: categoriaDB.nombre}, {categoria: 'Variado'})
     ])
 
     const categoriaBorrada = await Categoria.findByIdAndDelete(id);
     return res.json({
-        msg: `La categoria ${categoriaDB.nombre} se modificara a la categoria: Variado`,
+        msg: `La categoria ${categoriaDB.nombre} se modificara a la categoria: Variado`, 
+        categoriaBorrada,
         listaProductos
     });
 }
