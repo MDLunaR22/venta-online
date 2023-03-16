@@ -1,4 +1,5 @@
 const { response, request } = require('express');
+const Carrito = require('../models/carrito');
 
 const Factura = require('../models/factura');
 const Producto = require('../models/producto');
@@ -28,20 +29,29 @@ const obtenerFacturaPorId = async (req = request, res = response) => {
 }
 
 const crearFactura = async (req = request, res = response) => {
+
+  const id = req.params.id;
+
   try {
     
-    const productos = await Producto.findOne({ nombre: req.body.productos.producto});
+    const producto = await Producto.findOne({ nombre: req.body.producto});
+    const carrito = await Carrito.findOne({_id: id})
 
     const usuario = await Usuario.findById({_id: req.usuario._id});
     if (!usuario) {
       return res.status(400).json({ mensaje: 'El usuario no existe.' });
     }
-    let total = (productos.stock * productos.precio)+total;
+
+    const productos = {
+      nombre: producto.nombre,
+      cantidad: carrito.cantidad,
+      precio: producto.precioUnidad,
+    }
 
     const factura = new Factura({
-      usuario: req.usuario._id,
-      productos: req.body.productos,
-      total: total
+      idCarrito: id,
+      productos: productos,
+      total: carrito.total
     });
 
     // Guardar la nueva factura en la base de datos

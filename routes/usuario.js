@@ -3,15 +3,18 @@ const { Router } = require('express');
 const { check } = require('express-validator');
 
 const { getUsuarios, postUsuario, putUsuario, deleteUsuario } = require('../controllers/usuario');
-const { emailExiste, esRoleValido, existeUsuarioPorId, validarRol } = require('../helpers/db-validators');
+const { emailExiste } = require('../helpers/db-validators');
 const { validarCampos } = require('../middlewares/validar-campos');
 const { validarJWT } = require('../middlewares/validar-jwt');
+const { esAdminRole } = require('../middlewares/validar-roles');
 
 const router = Router();
 
 router.get('/mostrar', getUsuarios);
 
 router.post('/agregar', [
+    validarJWT,
+    esAdminRole,
     check('nombre', 'El nombre es obligatorio para el post').not().isEmpty(),
     check('password', 'La password es obligatorio para el post').not().isEmpty(),
     check('password', 'La passwarod debe ser mayor a 6 letras').isLength({ min: 6 }),

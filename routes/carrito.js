@@ -1,15 +1,19 @@
 const { Router } = require('express');
 const { check } = require('express-validator');
-const { crearCarrito, crearCompra } = require('../controllers/carrito');
+const { crearCarrito, crearCompra, mostrarCarrito, eliminarCarrito } = require('../controllers/carrito');
 
 const { validarCampos } = require('../middlewares/validar-campos');
 const { validarJWT } = require('../middlewares/validar-jwt');
+const { esClienteRole } = require('../middlewares/validar-roles');
 
 const router = Router();
 
+
+router.get('/mostrar', mostrarCarrito)
+
 router.post('/agregarCarrito', [
     validarJWT,
-    validarCampos
+    esClienteRole
 ], crearCarrito)
 
 router.post('/Comprar', [
@@ -25,7 +29,6 @@ router.put('/editar/:id', [
 ]);
 
 router.delete('/eliminar/:id',
-    validarJWT
-);
+    validarJWT, eliminarCarrito);
 
 module.exports = router;

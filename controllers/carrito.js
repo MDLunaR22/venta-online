@@ -2,23 +2,60 @@ const { response, request } = require('express');
 //Modelos
 const Factura = require('../models/factura');
 const Carrito = require('../models/carrito')
+const Producto = require('../models/producto')
 
+const mostrarCarrito = async (req = request, res = response) => {
+    const listaCarrito = await Promise.all([
+        Carrito.find()
+    ])
 
+    res.json({
+        msg: 'lista de carritos',
+        listaCarrito
+    })
+}
 
 const crearCarrito = async (req = request, res = response) => {
 
-    const body = req.body;
-    const { uid } = req.usuario;
+    const { producto, cantidad } = req.body;
+    const id = req.usuario._id;
 
+    const productoDB = await Producto.findOne({ nombre: producto })
+    let stockDB = productoDB.stock;
+    let precioUnidad = productoDB.precioUnidad;
+
+    let total = 0;
+
+    if (stockDB < cantidad) {
+        return res.status(500).json({
+            msg: 'No se puede agregar mas de este producto'
+        })
+    }
+    total += (cantidad * precioUnidad)
+
+    const productos = {
+        nombre: producto,
+        cantidad: cantidad,
+        precio: precioUnidad
+    }
+
+    const data = {
+        usuario: id,
+        productos: productos,
+        total: total
+    }
     try {
-        const carrito = new Carrito({ usuario: uid }, body);
+        const carrito = new Carrito(data);
         await carrito.save();
+        let stock = productoDB.stock - cantidad
+        const actualizarProducto = await Producto.findOneAndUpdate({ nombre: producto }, { stock: stock, ventas: cantidad })
         res.status(201).json({
             msg: 'Carrito:',
             carrito
         });
     } catch (error) {
         res.status(400).json({
+            id,
             msg: 'Error al crear el carrito',
             error
         });
@@ -82,23 +119,24 @@ const editarCarrito = async (req, res) => {
 
 const eliminarCarrito = async (req, res) => {
     const { id } = req.params;
-
+  
     try {
-        const eliminarCarrito = await Carrito.findOneAndDelete({ _id: id });
-
-        if (!eliminarCarrito) {
-            return res.status(404).json({ msg: 'Factura no encontrada' });
-        }
-
-        res.status(200).json({ msg: 'Factura eliminada correctamente' });
+      const carritoEliminado = await Carrito.findOneAndDelete({ _id: id });
+  
+      if (!carritoEliminado) {
+        return res.status(404).json({ message: 'Factura no encontrada' });
+      }
+  
+      res.status(200).json({ message: 'Factura eliminada correctamente' });
     } catch (error) {
-        res.status(500).json({ msg: 'Error al eliminar la factura', error });
+      res.status(500).json({ message: 'Error al eliminar la factura' });
     }
-};
+  };
 
 module.exports = {
     crearCarrito,
     crearCompra,
     editarCarrito,
-    eliminarCarrito
+    eliminarCarrito,
+    mostrarCarrito
 }

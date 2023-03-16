@@ -18,7 +18,7 @@ router.get('/:id', [
     validarCampos
 ], obtenerFacturaPorId);
 
-router.post('/agregar', [
+router.post('/agregar/:id', [
     validarJWT,
 ], crearFactura);
 
