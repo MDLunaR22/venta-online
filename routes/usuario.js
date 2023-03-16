@@ -13,8 +13,6 @@ const router = Router();
 router.get('/mostrar', getUsuarios);
 
 router.post('/agregar', [
-    validarJWT,
-    esAdminRole,
     check('nombre', 'El nombre es obligatorio para el post').not().isEmpty(),
     check('password', 'La password es obligatorio para el post').not().isEmpty(),
     check('password', 'La passwarod debe ser mayor a 6 letras').isLength({ min: 6 }),
