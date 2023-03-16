@@ -50,7 +50,7 @@ router.put('/editar/:id', [
     esAdminRole,
     check('id', 'No es un id de mongo valido').isMongoId(),
     check('id').custom(existeProductoPorId),
-    check('categoria', 'La categoria es requerida'),
+    check('categoria', 'La categoria es requerida').not().isEmpty(),
     validarCampos
 ], actualizarProducto);
 
