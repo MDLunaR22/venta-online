@@ -33,19 +33,12 @@ const validarRol = async (id) => {
 
 }
 
-const existeUsuario = async () => {
-    const existIdOfUser = await Usuario.findById( id );
-    if ( !existIdOfUser ) {
-        throw new Error(`El id: ${id} no existe en la DB`);
-    }
-}
-
 
 const existeUsuarioPorId = async( id ) => {
     
     const existIdOfUser = await Usuario.findById( id );
     if ( !existIdOfUser ) {
-        throw new Error(`El id: ${id} no existe en la DB`);
+        throw new Error(`El usuario con el id: ${id} no existe en la DB`);
     }
 
 }
