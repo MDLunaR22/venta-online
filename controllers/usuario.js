@@ -42,11 +42,11 @@ const postUsuario = async (req = request, res = response) => {
 
 const putUsuario = async (req = request, res = response) => {
 
-    const { id } = req.params;
-    const usuario1 = req.header('x-token');
+    const id = req.params.id;
+    const usuario1 = req.usuario;
     const { _id, rol, estado, ...resto } = req.body;
 
-    const rolUsuario = await Usuario.findById({ _id: usuario1.uid })
+    const rolUsuario = await Usuario.findById({ _id: usuario1._id })
     const usuario = await Usuario.findOne({ _id: id })
 
     if (rolUsuario.rol != 'ADMIN_ROLE') {
@@ -60,8 +60,10 @@ const putUsuario = async (req = request, res = response) => {
         })
     }
 
-    const salt = bcryptjs.genSaltSync();
-    resto.password = bcryptjs.hashSync(resto.password, salt);
+    if (resto.password != null) {
+        const salt = bcryptjs.genSaltSync();
+        resto.password = bcryptjs.hashSync(resto.password, salt);
+    }
 
     const usuarioEditado = await Usuario.findByIdAndUpdate(id, resto);
 
